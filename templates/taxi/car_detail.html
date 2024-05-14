@@ -12,11 +12,11 @@
     </a>
   
       {% if user not in car.drivers.all %}
-      <a href="{% url 'taxi:assign-driver' car.id %}" class="btn btn-primary">
+      <a href="{% url 'taxi:manage-my-car' pk=car.id %}?action=assign" class="btn btn-primary">
         Assign me to this car
       </a>
     {% else %}
-      <a href="{% url 'taxi:remove-driver' car.id %}" class="btn btn-danger">
+      <a href="{% url 'taxi:manage-my-car' pk=car.id %}?action=remove" class="btn btn-danger">
         Delete me from this car
       </a>
     {% endif %}

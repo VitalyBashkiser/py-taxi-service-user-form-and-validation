@@ -1,6 +1,7 @@
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
-from django.urls import reverse_lazy
+from django.http import HttpResponseRedirect
+from django.shortcuts import render, get_object_or_404
+from django.urls import reverse_lazy, reverse
 from django.views import generic
 from django.contrib.auth.mixins import LoginRequiredMixin
 
@@ -109,19 +110,16 @@ class DriverLicenseUpdateView(LoginRequiredMixin, generic.UpdateView):
     success_url = reverse_lazy("taxi:driver-list")
 
 
-class AssignMeToCarView(LoginRequiredMixin, generic.View):
+class ManageMyCarView(LoginRequiredMixin, generic.View):
     def post(self, request, *args, **kwargs):
-        car = Car.objects.get(pk=self.kwargs["pk"])
+        car = get_object_or_404(Car, pk=self.kwargs["pk"])
         user = request.user
-        if user not in car.drivers.all():
-            car.drivers.add(user)
-        return redirect("taxi:car-detail", pk=car.pk)
-
-
-class RemoveMeFromCarView(LoginRequiredMixin, generic.View):
-    def post(self, request, *args, **kwargs):
-        car = Car.objects.get(pk=self.kwargs["pk"])
-        user = request.user
-        if user in car.drivers.all():
-            car.drivers.remove(user)
-        return redirect("taxi:car-detail", pk=car.pk)
+        if "assign" in request.POST:
+            if user not in car.drivers.all():
+                car.drivers.add(user)
+        elif "remove" in request.POST:
+            if user in car.drivers.all():
+                car.drivers.remove(user)
+        return HttpResponseRedirect(
+            reverse("taxi:car-detail", kwargs={"pk": car.pk})
+        )
